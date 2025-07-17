@@ -1,0 +1,35 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+    commands:
+      - echo "✅ Instalando Google Chrome..."
+      - curl https://intoli.com/install-google-chrome.sh | bash
+      - google-chrome --version
+
+      - echo "📥 Descargando ChromeDriver compatible..."
+      - export CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
+      - echo "Chrome version: $CHROME_VERSION"
+      - export CHROMEDRIVER_VERSION=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" | jq -r ".channels.Stable.version")
+      - export CHROMEDRIVER_URL=$(curl -s "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json" | jq -r --arg version "$CHROMEDRIVER_VERSION" '.versions[] | select(.version==$version) | .downloads.chromedriver[] | select(.platform=="linux64") | .url')
+      - curl -Lo chromedriver.zip "$CHROMEDRIVER_URL"
+      - unzip chromedriver.zip
+      - mv chromedriver-linux64/chromedriver /usr/local/bin/
+      - chmod +x /usr/local/bin/chromedriver
+      - chromedriver --version
+
+  pre_build:
+    commands:
+      - echo "📦 Compilando el proyecto..."
+      - mvn compile
+
+  build:
+    commands:
+      - echo "🚀 Ejecutando pruebas..."
+      - mvn test
+
+artifacts:
+  files:
+    - target/surefire-reports/**
