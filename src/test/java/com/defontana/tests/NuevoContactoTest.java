@@ -62,6 +62,7 @@ public class NuevoContactoTest {
                 By.xpath("//a[contains(@href, '/contacts')]")));
         enlaceContactos.click();
         System.out.println("🟢 Se hizo clic en el enlace de Contactos");
+        System.out.println("🟢 Se agrega testigo de ejecución automatica 1");
 
         WebElement btnNuevo = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(., 'Persona')]")));
         btnNuevo.click();
