@@ -8,7 +8,6 @@ phases:
       - echo "✅ Instalando Google Chrome..."
       - curl https://intoli.com/install-google-chrome.sh | bash
       - google-chrome --version
-
       - echo "📥 Descargando ChromeDriver compatible..."
       - export CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+' | head -1)
       - echo "Chrome version: $CHROME_VERSION"
