@@ -23,7 +23,17 @@ public class NuevoContactoTest {
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new"); // puedes quitar esto si deseas ver el navegador
+
+        // Opciones para ejecución en contenedor
+        options.addArguments("--headless=new");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--remote-allow-origins=*");
+
+        // Evitar conflicto con perfiles
+        String tempDir = System.getProperty("java.io.tmpdir");
+        options.addArguments("--user-data-dir=" + tempDir + "/chrome-user-data-" + System.currentTimeMillis());
+
         driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         driver.manage().window().maximize();
@@ -31,14 +41,13 @@ public class NuevoContactoTest {
 
     @Test
     public void testLogin() {
-    	
-    	  driver.get(baseUrl);
-        // Login
-    	wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("cliente"))).sendKeys("empresas defontana");
+        driver.get(baseUrl);
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("cliente"))).sendKeys("empresas defontana");
         driver.findElement(By.name("usuario")).sendKeys("auditor6");
         driver.findElement(By.name("empresa")).sendKeys("DFCHILE");
         driver.findElement(By.name("password")).sendKeys("2");
-        // Esperar que cargue el panel principal
+
         WebElement botonEntrar = wait.until(ExpectedConditions.elementToBeClickable(
                 By.xpath("//button[@type='submit' and contains(@class, 'login__submit') and normalize-space()='Entrar']")));
         botonEntrar.click();
@@ -49,80 +58,60 @@ public class NuevoContactoTest {
 
         wait.until(ExpectedConditions.invisibilityOfElementLocated(By.cssSelector(".loading-content")));
 
-        // Navegar al módulo de contactos
         WebElement enlaceContactos = wait.until(ExpectedConditions.elementToBeClickable(
-        	    By.xpath("//a[contains(@href, '/contacts')]")));
-        	enlaceContactos.click();
-        	System.out.println("🟢 Se hizo clic en el enlace de Contactos");
+                By.xpath("//a[contains(@href, '/contacts')]")));
+        enlaceContactos.click();
+        System.out.println("🟢 Se hizo clic en el enlace de Contactos");
 
-        // Click en botón "Nuevo contacto"
         WebElement btnNuevo = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(., 'Persona')]")));
         btnNuevo.click();
 
-        //llena el formulario
-        
         WebElement campoNombreEmpresa = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("name")));
         campoNombreEmpresa.sendKeys("Prueba automatizada");
         System.out.println("✅ Nombre contacto ingresado correctamente");
-        
-        
-        // Apellido
-        
+
         WebElement campoApellido = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("lastName")));
         campoApellido.sendKeys("Prueba automatizada");
         System.out.println("✅ Apellido del contacto ingresado correctamente");
-        
-        
-        //fuente
-        
+
         WebElement Fuente = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("lastName")));
         Fuente.sendKeys("Prueba");
         System.out.println("✅ fuente del contacto ingresado correctamente");
-        
-        
+
         WebElement Telefono = wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("phoneNumber")));
         Telefono.sendKeys("985326620");
         System.out.println("✅ Telefono del contacto ingresado correctamente");
 
-        // Generar correo aleatorio
         correoGenerado = generarCorreoAleatorio();
         WebElement emailInput = wait.until(ExpectedConditions.elementToBeClickable(By.name("mail")));
         emailInput.sendKeys(correoGenerado);
-        
-        
-        //aqui trabajamos la lista desplegable
-        
-     // 1. Escribir "Archetool" en el input con clases únicas
+
         WebElement campoAutocomplete = wait.until(ExpectedConditions.elementToBeClickable(
-            By.xpath("//input[contains(@class,'MuiAutocomplete-input') and contains(@class,'MuiOutlinedInput-input')]")
+                By.xpath("//input[contains(@class,'MuiAutocomplete-input') and contains(@class,'MuiOutlinedInput-input')]")
         ));
         campoAutocomplete.clear();
         campoAutocomplete.sendKeys("Archetool");
         System.out.println("✅ Empresa archetool seleccionada correctamente");
 
-        // 2. Esperar la opción desplegada y hacer clic
         WebElement opcionArchetool = wait.until(ExpectedConditions.elementToBeClickable(
-            By.xpath("//li[normalize-space()='Archetool']") // Esto asume que la lista es tipo <li>
+                By.xpath("//li[normalize-space()='Archetool']")
         ));
         opcionArchetool.click();
 
-        // Guardar contacto
         WebElement btnGuardar = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//button[contains(., 'Guardar')]")));
         btnGuardar.click();
 
-        // Esperar confirmación de guardado
         esperarSpinnerDesaparecer();
 
-        // Buscar contacto por correo
-        WebElement buscador = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//input[@placeholder='Buscar por nombre, email, teléfono o empresa...']")));
+        WebElement buscador = wait.until(ExpectedConditions.elementToBeClickable(
+                By.xpath("//input[@placeholder='Buscar por nombre, email, teléfono o empresa...']")));
         buscador.sendKeys(correoGenerado);
         buscador.sendKeys(Keys.ENTER);
 
-        // Esperar resultados y validar que el correo aparece en la lista
         boolean contactoCreado = wait.until(driver -> driver.getPageSource().contains(correoGenerado));
         assertTrue("El contacto no se creó correctamente", contactoCreado);
-        
-        System.out.println("✅ El contacto se encontro correctamente con el correo: " + correoGenerado);
+
+        System.out.println("✅ El contacto se encontró correctamente con el correo: " + correoGenerado);
     }
 
     public String generarCorreoAleatorio() {
@@ -143,7 +132,7 @@ public class NuevoContactoTest {
     @After
     public void tearDown() {
         if (driver != null) {
-       //     driver.quit();
+            driver.quit(); // Activa el quit para liberar recursos en CodeBuild
         }
     }
 }
