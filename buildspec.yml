@@ -21,6 +21,11 @@ phases:
       - echo "Ejecutando pruebas..."
       - mvn test
 
+      post_build:
+  commands:
+      - echo "📄 Resultados de pruebas:"
+      - cat target/surefire-reports/*.txt || echo "No se encontraron reportes de prueba."
+
 artifacts:
   files:
     - target/surefire-reports/**
