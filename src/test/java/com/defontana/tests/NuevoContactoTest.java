@@ -23,7 +23,7 @@ public class NuevoContactoTest {
     public void setUp() {
         WebDriverManager.chromedriver().setup();
         ChromeOptions options = new ChromeOptions();
-      //  options.addArguments("--headless=new"); // puedes quitar esto si deseas ver el navegador
+        options.addArguments("--headless=new"); // puedes quitar esto si deseas ver el navegador
         driver = new ChromeDriver(options);
         wait = new WebDriverWait(driver, Duration.ofSeconds(20));
         driver.manage().window().maximize();
